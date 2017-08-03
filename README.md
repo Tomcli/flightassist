@@ -269,7 +269,7 @@ authorized via the application.
 
 ### Cloud Foundry micro-service based application hosted in IBM Bluemix
 
-Pushing the Node.js and Python application to Bluemix as a CF application is quite similar
+Pushing the Python microservice to Bluemix as a CF application is quite similar
 to running the monolithic application. The extra steps to perform are pushing the Python microservice first and setting up extra environment variables in the Bluemix console.
 
  1. Clone the weather microservice project: `git clone https://github.com/estesp/flightassist-weather`
