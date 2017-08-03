@@ -1,7 +1,20 @@
+---
+declared-services:
+  - mycloudant:
+      label: cloudantNoSQLDB
+      plan: Lite
+  - myweatherinsights:
+      label: weatherinsights
+      plan: Free-v2
+
 applications:
 - name: FlightAssist
-  host: flightassist
   path: .
   domain: mybluemix.net
   instances: 1
   memory: 512M
+  services:
+  - mycloudant
+  - myweatherinsights
+  env:
+    DEPLOY: cloudfoundry

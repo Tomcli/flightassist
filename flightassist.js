@@ -19,7 +19,7 @@ if (process.env.CONVERSATION_MODE === "true") {
 }
 
 // if deploying to a different route, update this variable:
-var baseURL = "http://flightassist.mybluemix.net/";
+var baseURL = process.env.BASE_URL;
 if (process.env.DEVMODE === "true") {
     baseURL = process.env.DEV_URL;
 }
@@ -57,7 +57,7 @@ app.set('port', process.env.PORT || 3000);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(session({ secret: 'wilson dog ball' }));
+app.use(session({ secret: 'wilson dog ball', proxy: true, resave: true, saveUninitialized: true }));
 app.use(bodyParser.json()); // support json encoded bodies
 
 app.get('/', routes.index);

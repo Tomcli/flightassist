@@ -18,9 +18,13 @@ if (process.env.DEVMODE === "true") {
         weatherURL = process.env.WEATHER_URL;
     }
 } else if (process.env.DEPLOY === "kubernetes") {
-    console.log("kubernetes deploy mode is detected")
+    console.log("kubernetes deploy mode is detected");
     var binding = JSON.parse(fs.readFileSync('/opt/service-bind/binding', 'utf8'));
-    cURL = binding.url
+    cURL = binding.url;
+    if (process.env.USE_WEATHER_SERVERLESS == "true"){
+        var weatherbinding = JSON.parse(fs.readFileSync('/opt/service-bind2/binding', 'utf8'));
+        weatherURL = weatherbinding.url;
+    }
 } else {
     var vcap_services = JSON.parse(process.env.VCAP_SERVICES);
     cURL = vcap_services.cloudantNoSQLDB[0].credentials.url;
@@ -109,11 +113,14 @@ function handleViaWeatherAPI(req, resp, data) {
 }
 
 function handleViaWeatherMicroservice(req, resp, data) {
+    var microserviceURL = process.env.MICROSERVICE_URL;
     console.log("using external weather microservice: " + process.env.USE_WEATHER_SERVICE);
     // overwrite host, endpoint to point to our weather microservice
     if (process.env.DEVMODE === "true" && process.env.DEPLOY !== "swarm") {
-        host = "localhost";
-    } else {
+            host = "localhost";
+    } else if(process.env.DEPLOY === "cloudfoundry") {
+            host = microserviceURL;
+    } else{
         host = "weather-service";
     }
     var endpoint = "/weather/" + req.query.lat + "/" + req.query.lon;
@@ -126,6 +133,9 @@ function handleViaWeatherMicroservice(req, resp, data) {
         rejectUnauthorized: false
     };
 
+    if (process.env.DEPLOY === "cloudfoundry"){
+        options.port = null;
+    }
     //send the request to the Weather API
     restcall.get(options, false, function(newData) {
         // cache this data in cloudant with the current epoch ms
