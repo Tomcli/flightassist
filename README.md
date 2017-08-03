@@ -183,7 +183,11 @@ links to these services are below:
  * [Weather Company Data, also known as Weather Insights](https://console.ng.bluemix.net/catalog/services/weather-company-data?env_id=ibm:yp:us-south)
 
 > **Note:** Cloud Foundry power users will know that you can create service
-> instances via the `cf` command line tool.
+> instances via the `cf` command line tool. 
+```shell
+cf create-service cloudantNoSQLDB Lite mycloudant
+cf create-service weatherinsights Free-v2 myweatherinsights
+```
 
 Once you have created free tier instances of these services, you can view
 your credentials and, for each, copy the *url* variant of the credential info
@@ -240,22 +244,47 @@ you can visit locally via http://localhost:3000 in your browser.
 
 Pushing the Node.js application to Bluemix as a CF application is quite similar
 to running the Node.js application locally. The main steps to perform are in the
-Bluemix console for binding the Bluemix catalog service instances to your application
-and setting up the external API credentials as environment variables.
+Bluemix console for setting up the external API credentials as environment variables.
 
 Because we already have a `manifest.yml` in the root of the project, you can
 get started by simply using `cf push` from the root of the repository:
 
  1. Clone the project: `git clone https://github.com/estesp/flightassist`
- 2. Edit `manifest.yml` and select your own application name and `host`. Since my application instance already owns the route `flightassist` on `mybluemix.net` you will have to select a unique name.
- 3. Edit `flightassist.js` to set the `baseURL` variable (around line 16) to your selected CF route hostname.
- 4. Either type `cf push` after making these edits or `make cfdeploy` to do the same action.
- 5. Once your application is deployed, you need to make service bindings; go to the Bluemix console, open your application and use the UI to bind your two Bluemix services (Cloudant and Weather Data) to your application.
- 6. Go to the *Runtime* settings for your application and add these four environment variables to set up external credentials to the TripIt and FlightStats services:
+ 2. Edit `manifest.yml` and select your own application name and `host`. Since my application instance already owns the route `flightassist` on `mybluemix.net` you will have to select a unique name. Also, if you have a different name for Cloudant and Weather service, you need to rename them under `declared-services` and `services`.
+ 3. Either type `cf push` after making these edits or `make cfdeploy` to do the same action.
+ 4. Go to the *Runtime* settings for your application and add these five environment variables to set up external credentials to the TripIt and FlightStats services:
    - `FLIGHTSTATS_APP_ID` : application ID assigned by FlightStats
    - `FLIGHTSTATS_APP_KEY` : application key assigned by FlightStats
    - `TRIPIT_API_KEY` : API key assigned by TripIt
    - `TRIPIT_API_SECRET` : API secret assigned by TripIt
+   - `BASE_URL` : Your selected CF route hostname. In the format `https://{hostname}.mybluemix.net/`
+
+Your application should restart automatically, but can be done manually as well
+in the UI. With the service bindings and added environment variables, the
+application should be operational at the hostname route you selected for your CF
+application. Note that the `FORCE_FLIGHT_VIEW` variable can optionally be set to `true`
+as an added environment variable for demonstrating the application function even
+if no flights are upcoming in the next day with the TripIt user credentials
+authorized via the application.
+
+### Cloud Foundry micro-service based application hosted in IBM Bluemix
+
+Pushing the Node.js and Python application to Bluemix as a CF application is quite similar
+to running the monolithic application. The extra steps to perform are pushing the Python microservice first and setting up extra environment variables in the Bluemix console.
+
+ 1. Clone the weather microservice project: `git clone https://github.com/estesp/flightassist-weather`
+ 2. Run `bx app push {your_unique_microservice_name} -f flightassist-weather/manifest.yml` to host your microservice on Cloudfoundry.
+ 3. Clone the project: `git clone https://github.com/estesp/flightassist`
+ 4. Edit `manifest.yml` and select your own application name and `host`. Since my application instance already owns the route `flightassist` on `mybluemix.net` you will have to select a unique name. Also, if you have a different name for Cloudant and Weather service, you need to rename them under `declared-services` and `services`.
+ 5. Either type `cf push` after making these edits or `make cfdeploy` to do the same action.
+ 6. Go to the *Runtime* settings for your application and add these seven environment variables to set up external credentials to the TripIt and FlightStats services:
+   - `FLIGHTSTATS_APP_ID` : application ID assigned by FlightStats
+   - `FLIGHTSTATS_APP_KEY` : application key assigned by FlightStats
+   - `TRIPIT_API_KEY` : API key assigned by TripIt
+   - `TRIPIT_API_SECRET` : API secret assigned by TripIt
+   - `BASE_URL` : Your selected CF route host site. In the format `https://{app_hostname}.mybluemix.net/`
+   - `USE_WEATHER_SERVICE` : `true`
+   - `MICROSERVICE_URL`: Your weather microservice host site. In the format `https://{your_unique_microservice_name}.mybluemix.net/`
 
 Your application should restart automatically, but can be done manually as well
 in the UI. With the service bindings and added environment variables, the

@@ -9,6 +9,7 @@ declared-services:
 
 applications:
 - name: FlightAssist
+  host: FlightAssist
   path: .
   domain: mybluemix.net
   instances: 1
