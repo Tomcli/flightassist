@@ -183,7 +183,7 @@ links to these services are below:
  * [Weather Company Data, also known as Weather Insights](https://console.ng.bluemix.net/catalog/services/weather-company-data?env_id=ibm:yp:us-south)
 
 > **Note:** Cloud Foundry power users will know that you can create service
-> instances via the `cf` command line tool. 
+> instances via the `cf` command line tool. Here are the `cf` commands for creating the Cloudant NoSQL database and Weather Insights.
 ```shell
 cf create-service cloudantNoSQLDB Lite mycloudant
 cf create-service weatherinsights Free-v2 myweatherinsights
@@ -389,7 +389,7 @@ with the weather microservice and the main application.
 
 5. Edit the flightassist.yaml and replace the ```<namespace>``` with your own namespace.  Also replace <your-app-end-point-url> with the endpoint of the application.  If you are using the free cluster provided by IBM Container service, this is your node ip and nodeport, e.g. 169.47.237.139:30080
 
-5. Deploy the secret and deployment:
+6. Deploy the secret and deployment:
   * ```kubectl create -f secret.yaml```
   * ```kubectl create -f flightassist.yaml```
   
@@ -416,3 +416,23 @@ OpenWhisk system action to call the Weather Insights API:
  the data you got back from the `get --auth` command.
  5. Run your deployment of **flightassist** and verify in your logs that the
  OpenWhisk action is being utilized to query the weather data for each airport.
+ 
+To enable OpenWhisk action with Kubernetes application deployment, please do the following:
+
+1. Login to the IBM Bluemix console and set up the [OpenWhisk client](https://console.ng.bluemix.net/openwhisk/cli), making sure to run the setup command to set the host and authentication parameters.
+2. Run `wsk property get --auth | awk  '{print $3}'` to get the authentication
+ string from OpenWhisk and set a new variable in `.env`: `export OPENWHISK_AUTH=<auth-string` with
+ the data you got back from the `get --auth` command.
+3. Follow the create kubernetes cluster tutorial to create the kubernetes cluster in IBM Container service [https://console.ng.bluemix.net/docs/containers/cs_tutorials.html#cs_tutorials].
+4. Create the cloudant and weather insight service if you don't have them deployed yet:
+  * ```bx service create cloudantNoSQLDB Lite mycloudant```
+  * ``` bx service create weatherinsights Free-v2 myweatherinsights```
+5. Bind the two services to the kubernete cluster deployed earlier:
+  * ```bx cs cluster-service-bind {your-cluster-name} default mycloudant```
+  * ```bx cs cluster-service-bind {your-cluster-name} default myweatherinsights```
+6. Modify the secret.yaml file with flightstats-app-id, flightstats-app-key, tripit-api-key, and tripit-api-secret.
+7. Edit the **flightassist_serverless.yaml** and replace the ```<namespace>``` with your own namespace and ```<your-openwhisk-auth>``` with your OpenWhisk authentication.  Also replace <your-app-end-point-url> with the endpoint of the application.  If you are using the free cluster provided by IBM Container service, this is your node ip and nodeport, e.g. 169.47.237.139:30080
+8. Deploy the secret and deployment on your Kubernetes Cluster:
+  * ```kubectl create -f secret.yaml```
+  * ```kubectl create -f flightassist_serverless.yaml```
+ 
